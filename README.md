@@ -15,7 +15,7 @@ composer require betapeak/laravel-auditing-filesystem
 
 ### Setup
 
-You need to add the following config entries in config/auditing.php if you need to change the default behaviour of the driver.
+You need to add the following config entries in config/audit.php if you need to change the default behaviour of the driver.
 The `drivers` key of the config file should look like so:
 
 ```
@@ -53,7 +53,7 @@ You can use the driver in any Auditable model like so:
 <?php
 namespace App\Models;
 
-use BetaPeak\Auditing\Drivers\Filesystem as FilesystemDriver;
+use BetaPeak\Auditing\Drivers\FilesystemDriver;
 use Illuminate\Database\Eloquent\Model;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;

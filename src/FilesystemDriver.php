@@ -10,7 +10,7 @@ use League\Flysystem\Adapter\Local as LocalAdapter;
 use OwenIt\Auditing\Contracts\Auditable;
 use OwenIt\Auditing\Contracts\AuditDriver;
 
-class FileSystem implements AuditDriver
+class FilesystemDriver implements AuditDriver
 {
     /**
      * @var FilesystemAdapter
