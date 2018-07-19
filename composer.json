@@ -34,7 +34,7 @@
     ],
     "require": {
         "php": ">=7.0",
-        "owen-it/laravel-auditing": "^4.1",
+        "owen-it/laravel-auditing": "^7.0",
         "league/csv": "^9.0",
         "league/flysystem": "~1.0"
     },
