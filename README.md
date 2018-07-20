@@ -85,4 +85,4 @@ return [
 ];
 ```
 
-More information on using customer drivers with owen-it/laravel-auditing can be found on their [homepage](http://www.laravel-auditing.com/docs/7.0/audit-drivers)
+More information on using community drivers with owen-it/laravel-auditing can be found on their [homepage](http://www.laravel-auditing.com/docs/7.0/audit-drivers)
