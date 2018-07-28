@@ -6,7 +6,7 @@ to specify how the audit files are generated - from a flat catch-all file to fil
 
 ### Installation
 
-This driver requires that you are using `owen-it/laravel-auditing: ^4.1`. Provided this is fulfilled,
+This driver requires that you are using `owen-it/laravel-auditing: ^7.0`. Provided this is fulfilled,
 you can install the driver like so:
 
 ```
@@ -47,7 +47,7 @@ For simplicity, there are just 4 settings you can adjust and they're described b
 
 ### Usage
 
-You can use the driver in any Auditable model like so:
+You can use the driver in any Auditable model (locally) like so:
 
 ```
 <?php
@@ -73,4 +73,16 @@ class SomeModel extends Model implements AuditableContract
 }
 ```
 
-More information on using customer drivers with owen-it/laravel-auditing can be found on their [homepage](http://laravel-auditing.com/docs/4.1/audit-drivers)
+or globally like so in config/audit.php:
+
+```
+return [
+    // ...
+
+    'driver' => BetaPeak\Auditing\Drivers\FilesystemDriver::class,
+
+    // ...
+];
+```
+
+More information on using community drivers with owen-it/laravel-auditing can be found on their [homepage](http://www.laravel-auditing.com/docs/7.0/audit-drivers)

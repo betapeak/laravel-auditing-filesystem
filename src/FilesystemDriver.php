@@ -9,6 +9,7 @@ use League\Csv\Writer;
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use OwenIt\Auditing\Contracts\Auditable;
 use OwenIt\Auditing\Contracts\AuditDriver;
+use OwenIt\Auditing\Contracts\Audit;
 
 class FilesystemDriver implements AuditDriver
 {
@@ -63,7 +64,7 @@ class FilesystemDriver implements AuditDriver
     /**
      * {@inheritdoc}
      */
-    public function audit(Auditable $model)
+    public function audit(Auditable $model): Audit
     {
         if (!$this->disk->exists($this->auditFilepath)) {
             $file = $this->auditFileFromModel($model);
@@ -82,12 +83,15 @@ class FilesystemDriver implements AuditDriver
         }
 
         $this->cleanUp();
+
+        $implementation = Config::get('audit.implementation', Audit::class);
+        return new $implementation;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function prune(Auditable $model)
+    public function prune(Auditable $model): bool
     {
         return false;
     }
