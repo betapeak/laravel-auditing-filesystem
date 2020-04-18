@@ -98,8 +98,6 @@ class FilesystemDriverTest extends TestCase
      */
     public function testAuditHourly()
     {
-        Carbon::setTestNow(Carbon::create(2020, 4, 16, 9, 22, 0));
-
         $auditable = new Person();
 
         $driver = app(FilesystemDriver::class);
@@ -129,7 +127,7 @@ class FilesystemDriverTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
 
-        $driver = app(FilesystemDriver::class);
+        app(FilesystemDriver::class);
     }
 
     public function testPrune()
