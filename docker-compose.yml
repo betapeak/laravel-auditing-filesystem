@@ -1,0 +1,9 @@
+version: '3'
+services:
+    minio:
+        image: minio/minio
+        ports:
+            - "9005:9000"
+        volumes:
+            - ./volumes/s3:/data:rw
+        command: ['server', '/data']
