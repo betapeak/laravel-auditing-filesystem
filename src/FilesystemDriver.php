@@ -31,7 +31,7 @@ class FilesystemDriver implements AuditDriver
     /**
      * @var string
      */
-    protected $tempDir = '/audit_temp';
+    protected $tempDir = '/audit_temp/';
 
     /**
      * @var string
