@@ -1,4 +1,5 @@
 <?php
+
 namespace BetaPeak\Auditing\Drivers;
 
 use DateTime;
@@ -6,10 +7,9 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use League\Csv\Writer;
-use League\Flysystem\Adapter\Local as LocalAdapter;
+use OwenIt\Auditing\Contracts\Audit;
 use OwenIt\Auditing\Contracts\Auditable;
 use OwenIt\Auditing\Contracts\AuditDriver;
-use OwenIt\Auditing\Contracts\Audit;
 
 class FilesystemDriver implements AuditDriver
 {
@@ -19,19 +19,9 @@ class FilesystemDriver implements AuditDriver
     protected $disk = null;
 
     /**
-     * @var FilesystemAdapter
-     */
-    protected $temporaryLocalDisk = null;
-
-    /**
      * @var string
      */
     protected $dir = null;
-
-    /**
-     * @var string
-     */
-    protected $tempDir = '/audit_temp/';
 
     /**
      * @var string
@@ -54,11 +44,10 @@ class FilesystemDriver implements AuditDriver
     public function __construct()
     {
         $this->disk = Storage::disk(Config::get('audit.drivers.filesystem.disk', 'local'));
-        $this->dir = Config::get('audit.drivers.filesystem.dir', '/');
+        $this->dir = Config::get('audit.drivers.filesystem.dir', '');
         $this->filename = Config::get('audit.drivers.filesystem.filename', 'audit.csv');
         $this->fileLoggingType = Config::get('audit.drivers.filesystem.logging_type', 'single');
         $this->auditFilepath = $this->auditFilepath();
-        $this->temporaryLocalDisk = Storage::createLocalDriver(['root' => storage_path('app/')]);
     }
 
     /**
@@ -67,24 +56,13 @@ class FilesystemDriver implements AuditDriver
     public function audit(Auditable $model): Audit
     {
         if (!$this->disk->exists($this->auditFilepath)) {
-            $file = $this->auditFileFromModel($model);
-
-            $this->disk->put($this->auditFilepath, $file);
+            $this->disk->put($this->auditFilepath, $this->auditModelToCsv($model, true));
         } else {
-            if ($this->diskIsRemote($this->disk)) {
-                $temporaryFilepath = $this->fileToTemporary($this->auditFilepath);
-
-                $updatedAuditContents = $this->appendToFile($this->temporaryLocalDisk->path($temporaryFilepath), $model);
-
-                $this->disk->put($this->auditFilepath, $updatedAuditContents);
-            } else {
-                $this->appendToFile($this->disk->path($this->auditFilepath), $model);
-            }
+            $this->disk->append($this->auditFilepath, $this->auditModelToCsv($model));
         }
 
-        $this->cleanUp();
+        $implementation = Config::get('audit.implementation', \OwenIt\Auditing\Models\Audit::class);
 
-        $implementation = Config::get('audit.implementation', Audit::class);
         return new $implementation;
     }
 
@@ -96,66 +74,18 @@ class FilesystemDriver implements AuditDriver
         return false;
     }
 
-    /**
-     * Determine if a disk is a local or a remote disk.
-     *
-     * @param $disk
-     *
-     * @return bool
-     */
-    protected function diskIsRemote(FilesystemAdapter $disk)
-    {
-        return !($disk->getDriver()->getAdapter() instanceof LocalAdapter);
-    }
-
-    /**
-     * Get a new csv file as a resource from an Auditable model.
-     *
-     * @param Auditable $model
-     *
-     * @return resource
-     */
-    protected function auditFileFromModel(Auditable $model)
+    protected function auditModelToCsv(Auditable $model, bool $includeHeader = false)
     {
         $writer = Writer::createFromFileObject(new \SplTempFileObject());
 
         $auditArray = $this->sanitize($this->getAuditFromModel($model));
-
-        $writer->insertOne($this->headerRow($auditArray));
+        if ($includeHeader) {
+            $writer->insertOne($this->headerRow($auditArray));
+        }
         $writer->insertOne($auditArray);
 
-        $baseContents = 'data://text/csv,'.(string) $writer;
-
-        return @fopen($baseContents, 'r');
-    }
-
-    /**
-     * Append a record to an existing csv file on the local filesystem.
-     *
-     * @param $auditFilepath
-     * @param $model
-     *
-     * @return resource
-     */
-    protected function appendToFile($auditFilepath, Auditable $model)
-    {
-        $writer = Writer::createFromPath($auditFilepath, 'a+');
-
-        $writer->insertOne($this->sanitize($this->getAuditFromModel($model)));
-
-        $baseContents = 'data://text/csv,'.(string) $writer;
-
-        return @fopen($baseContents, 'r');
-    }
-
-    /**
-     * Return a randomized csv filename.
-     *
-     * @return string
-     */
-    protected function temporaryAuditFilename()
-    {
-        return str_random().'.csv';
+        // Remove trailing newline
+        return trim($writer->getContent());
     }
 
     /**
@@ -198,34 +128,6 @@ class FilesystemDriver implements AuditDriver
             default:
                 throw new \InvalidArgumentException("File logging type {$this->fileLoggingType} unknown. Please use one of 'single', 'daily' or 'hourly'.");
         }
-    }
-
-    /**
-     * Cleans temporary files.
-     */
-    protected function cleanUp()
-    {
-        $this->temporaryLocalDisk->deleteDirectory($this->tempDir);
-    }
-
-    /**
-     * Move a file from the main audit disk to the local filesystem in the temp dir.
-     *
-     * @param $auditFilepath
-     *
-     * @return string
-     */
-    protected function fileToTemporary($auditFilepath)
-    {
-        $existingAuditFile = $this->disk->get($auditFilepath);
-
-        $temporaryFilename = $this->temporaryAuditFilename();
-
-        $temporaryFilepath = $this->tempDir.$temporaryFilename;
-
-        $this->temporaryLocalDisk->put($temporaryFilepath, $existingAuditFile);
-
-        return $temporaryFilepath;
     }
 
     /**

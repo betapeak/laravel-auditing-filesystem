@@ -27,7 +27,7 @@ The `drivers` key of the config file should look like so:
         ],
         'filesystem' => [
             'disk'         => 'local',
-            'dir'          => 'audit/',
+            'dir'          => 'audit',
             'filename'     => 'audit.csv',
             'logging_type' => 'single',
         ],
@@ -86,3 +86,15 @@ return [
 ```
 
 More information on using community drivers with owen-it/laravel-auditing can be found on their [homepage](http://www.laravel-auditing.com/docs/7.0/audit-drivers)
+
+### Testing
+
+This package can be tested with phpunit. You need to run `composer install` (With dev dependencies).
+
+By default, you will only be able to run `vendor/bin/phpunit --testsuite local`.
+
+If you want to test with remote disks, you need to install [Docker](https://docs.docker.com/engine/install/ubuntu/) and [Docker Compose](https://docs.docker.com/compose/install/) beforehand.
+
+You need to run `docker-compose up -d` which will start a local s3 [minio](https://min.io/) instance which will allow testing remote disks.
+
+You can now run `vendor/bin/phpunit` or `vendor/bin/phpunit --testsuite remote`
