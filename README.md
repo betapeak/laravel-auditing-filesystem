@@ -6,7 +6,7 @@ to specify how the audit files are generated - from a flat catch-all file to fil
 
 ### Installation
 
-This driver requires that you are using `owen-it/laravel-auditing: ^7.0`. Provided this is fulfilled,
+This driver requires that you are using `owen-it/laravel-auditing: ^12.0`. Provided this is fulfilled,
 you can install the driver like so:
 
 ```
@@ -85,7 +85,7 @@ return [
 ];
 ```
 
-More information on using community drivers with owen-it/laravel-auditing can be found on their [homepage](http://www.laravel-auditing.com/docs/7.0/audit-drivers)
+More information on using community drivers with owen-it/laravel-auditing can be found on their [homepage](http://www.laravel-auditing.com/docs/master/audit-drivers)
 
 ### Testing
 
